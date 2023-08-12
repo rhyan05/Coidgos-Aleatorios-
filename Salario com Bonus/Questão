@@ -1,0 +1,9 @@
+Uma empresa quer premiar seus funcionários de acordo com o tempo de casa, isto é, a quantidade de anos que estão contratados, e por terem cumprido suas metas individuais. Para isso, a empresa construirá uma tabela com os nomes dos funcionários, salários, anos de empresa e um campo que contém um indicativo de que o funcionário cumpriu sua meta.
+
+A premiação será um bônus que corresponde ao próprio salário do funcionário acrescido de 5% por cada ano na empresa. Caso o funcionário tenha cumprido sua meta, terá mais 10% sobre o bônus já conquistado.
+
+1º) Seu programa deverá ler e armazenar os dados de todos os funcionários; 2º) Em seguida, deverá exibir a tabela com os dados dos funcionários, seja criativo no formato da tabela. 3º) Por fim, seu programa deverá exibir outra tabela com o nome de cada funcionário com seu respectivo bônus.
+
+Obs.(1): O registro de cada funcionário será dado em uma única linha, com cada campo separado por um ';'.
+
+Obs.(2): A entrada encerrará quando o usuário pressionar [ENTER] sem digitar valores na linha, isto é, será uma linha em branco.
