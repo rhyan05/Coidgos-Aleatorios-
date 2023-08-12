@@ -1,0 +1,14 @@
+from time import sleep
+h = 0
+m = 0
+s= 0
+while h != 23:
+  h+=1
+  m=0
+  while m != 60:
+    m+=1
+    s=0
+    while s != 60:
+      s+=1
+      print('%02d:%02d:%02d' % (h,m,s))
+      sleep(1)
