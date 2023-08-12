@@ -1,0 +1,18 @@
+calu=1
+calus = 1
+med = 0
+
+turma = int(input("turma: "))
+while turma>=calu:
+  aluno = int(input("aluno: "))
+  while calus<=aluno:
+    n1= int(input("nota: "))
+    med = med+n1
+    calus+=1
+  print(med)
+  med=0
+  aluno=0
+  calus=1
+  if turma>=calu:
+    True
+  calu+=1
