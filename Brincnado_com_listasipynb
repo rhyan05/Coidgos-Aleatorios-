@@ -1,0 +1,1754 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/rhyan05/Coidgos-Aleatorios-/blob/main/Brincnado_com_listasipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Algoritmos de ordenação"
+      ],
+      "metadata": {
+        "id": "YkrxiWhSSrmk"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "TavyWM7ISil4"
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np\n",
+        "\n",
+        "from datetime import datetime"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## Funções auxiliares"
+      ],
+      "metadata": {
+        "id": "rZjvKwN-UXxW"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def copiar_lista(lista):\n",
+        "  copia = []\n",
+        "  for elemento in lista:\n",
+        "    copia.append(elemento)\n",
+        "\n",
+        "  return copia"
+      ],
+      "metadata": {
+        "id": "otc8GoJSt96s"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def maior_elemento(lista):\n",
+        "  maior = lista[0]\n",
+        "  for elemento in lista:\n",
+        "    if elemento > maior:\n",
+        "      maior = elemento\n",
+        "\n",
+        "  return maior"
+      ],
+      "metadata": {
+        "id": "-JA06SzdUgPS"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def menor_elemento(lista):\n",
+        "  menor = lista[0]\n",
+        "  for elemento in lista:\n",
+        "    if elemento < menor:\n",
+        "      menor = elemento\n",
+        "\n",
+        "  return menor"
+      ],
+      "metadata": {
+        "id": "H4vtqgi-VcF-"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def obter_digitos(numero, little_endian=True, n_digitos=-1):\n",
+        "  resto = numero\n",
+        "  lista_digitos = []\n",
+        "  contador = 0\n",
+        "  while resto > 0:\n",
+        "    resultado = resto % 10\n",
+        "    lista_digitos.append(resultado)\n",
+        "    resto = resto // 10\n",
+        "    contador += 1\n",
+        "\n",
+        "  n_zeros = n_digitos - len(lista_digitos)\n",
+        "  if n_zeros > 0:\n",
+        "    for _ in range(n_zeros):\n",
+        "      lista_digitos.append(0)\n",
+        "\n",
+        "  n = n_digitos if n_digitos > contador else contador\n",
+        "  if little_endian:\n",
+        "    return lista_digitos\n",
+        "  else: # inverte a ordem dos dígitos\n",
+        "    return [lista_digitos[i] for i in range(n - 1, -1, -1)]"
+      ],
+      "metadata": {
+        "id": "aGWk7X-jpFqL"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def elementos_inteiros_distintos(lista):\n",
+        "  for elemento in lista:\n",
+        "    if int(elemento) != elemento:\n",
+        "      print(elemento, 'não é um valor inteiro.')\n",
+        "      return\n",
+        "\n",
+        "  N = len(lista)\n",
+        "  maior = maior_elemento(lista)\n",
+        "  menor = menor_elemento(lista)\n",
+        "\n",
+        "  if menor < 0:\n",
+        "    ajuste = -menor\n",
+        "  else:\n",
+        "    ajuste = 0\n",
+        "  lista_contadores = []\n",
+        "  for _ in range(maior + 1 + ajuste):\n",
+        "    lista_contadores.append(0)\n",
+        "\n",
+        "  for elemento in lista:\n",
+        "    if lista_contadores[elemento + ajuste] > 0:\n",
+        "      return False\n",
+        "    lista_contadores[elemento + ajuste] += 1\n",
+        "\n",
+        "  return True"
+      ],
+      "metadata": {
+        "id": "ERgNBzdgU3HA"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def elementos_distintos(lista):\n",
+        "  N = len(lista)\n",
+        "\n",
+        "  for i in range(N):\n",
+        "    for j in range(i + 1, N):\n",
+        "      if lista[i] == lista[j]:\n",
+        "        return False\n",
+        "\n",
+        "  return True"
+      ],
+      "metadata": {
+        "id": "ZkEtQhlNUaX0"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def converter_para_inteiros(lista):\n",
+        "  def confere(lista, elemento):\n",
+        "    for e in lista:\n",
+        "      if e == elemento:\n",
+        "        return True\n",
+        "\n",
+        "    return False\n",
+        "\n",
+        "  elementos_unicos = []\n",
+        "  for elemento in lista:\n",
+        "    if not confere(elementos_unicos, elemento):\n",
+        "      elementos_unicos.append(elemento)\n",
+        "\n",
+        "  multiplicador = 10\n",
+        "  continua = True\n",
+        "  while continua:\n",
+        "    lista_inteiros = []\n",
+        "    for elemento in elementos_unicos:\n",
+        "      lista_inteiros.append(int(multiplicador * elemento))\n",
+        "\n",
+        "    if elementos_inteiros_distintos(lista_inteiros):\n",
+        "      continua = False\n",
+        "    else:\n",
+        "      multiplicador *= 10\n",
+        "\n",
+        "  return [int(multiplicador * e) for e in lista]"
+      ],
+      "metadata": {
+        "id": "zyDHNIRA6b0g"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def lista_ordenada(lista):\n",
+        "  N = len(lista)\n",
+        "\n",
+        "  for i in range(1, N):\n",
+        "    if lista[i - 1] > lista[i]:\n",
+        "      return False\n",
+        "\n",
+        "  return True"
+      ],
+      "metadata": {
+        "id": "XOAFQsSoWL1d"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def exibir_espiral(lista):\n",
+        "  ordem = ['direita',\n",
+        "           'baixo',\n",
+        "           'esquerda',\n",
+        "           'cima']\n",
+        "\n",
+        "  N = len(lista)\n",
+        "\n",
+        "  for lado in range(N):\n",
+        "    if lado * lado == N:\n",
+        "      break\n",
+        "\n",
+        "  matriz = []\n",
+        "  for i in range(lado):\n",
+        "    matriz.append([])\n",
+        "    for j in range(lado):\n",
+        "      matriz[i].append(None)\n",
+        "\n",
+        "  m_i = 0\n",
+        "  m_j = 0\n",
+        "  direcao = ordem[0]\n",
+        "  for i in range(N):\n",
+        "    matriz[m_i][m_j] = lista[i]\n",
+        "    if direcao == ordem[0] and (m_j == lado - 1 or matriz[m_i][m_j + 1] is not None):\n",
+        "      direcao = ordem[1]\n",
+        "      m_i += 1\n",
+        "    elif direcao == ordem[0]:\n",
+        "      m_j += 1\n",
+        "    elif direcao == ordem[1] and (m_i == lado - 1 or matriz[m_i + 1][m_j] is not None):\n",
+        "      direcao = ordem[2]\n",
+        "      m_j -= 1\n",
+        "    elif direcao == ordem[1]:\n",
+        "      m_i += 1\n",
+        "    elif direcao == ordem[2] and (m_i == 0 or matriz[m_i][m_j - 1] is not None):\n",
+        "      direcao = ordem[3]\n",
+        "      m_i -= 1\n",
+        "    elif direcao == ordem[2]:\n",
+        "      m_j -= 1\n",
+        "    elif direcao == ordem[3] and (m_i == 0 or matriz[m_i - 1][m_j] is not None):\n",
+        "      direcao = ordem[0]\n",
+        "      m_j += 1\n",
+        "    elif direcao == ordem[3]:\n",
+        "      m_i -= 1\n",
+        "\n",
+        "  for linha in matriz:\n",
+        "    print(linha)"
+      ],
+      "metadata": {
+        "id": "Cvfc9Qa3DPTe"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Implementar os algoritmos de ordenação conforme estudado em sala de aula"
+      ],
+      "metadata": {
+        "id": "ZS3kPtjDSuBQ"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def insertion_sort(lista):\n",
+        "  N = len(lista)\n",
+        "\n",
+        "  for i in range(1, N):\n",
+        "    elemento = lista[i]\n",
+        "    j = i - 1\n",
+        "    while (j >= 0) and (elemento < lista[j]):\n",
+        "      lista[j + 1] = lista[j]\n",
+        "      j -= 1\n",
+        "    lista[j + 1] = elemento\n",
+        "\n",
+        "# Teste com lista de 10 elementos\n",
+        "n = 10\n",
+        "np.random.seed(0)\n",
+        "dados = list(np.random.rand(n))\n",
+        "print('lista original =', dados)\n",
+        "insertion_sort(dados)\n",
+        "print('lista ordenada =', dados)\n",
+        "if lista_ordenada(dados):\n",
+        "  print('O algoritmo de ordenação ordenou os dados corretamente')\n",
+        "else:\n",
+        "  print('O algoritmo de ordenação não ordenou os dados')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "18CXXOB5Sovt",
+        "outputId": "746ea8be-fb2c-4bfc-c18a-b7a4f4ef8ba0"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "lista original = [0.5488135039273248, 0.7151893663724195, 0.6027633760716439, 0.5448831829968969, 0.4236547993389047, 0.6458941130666561, 0.4375872112626925, 0.8917730007820798, 0.9636627605010293, 0.3834415188257777]\n",
+            "lista ordenada = [0.3834415188257777, 0.4236547993389047, 0.4375872112626925, 0.5448831829968969, 0.5488135039273248, 0.6027633760716439, 0.6458941130666561, 0.7151893663724195, 0.8917730007820798, 0.9636627605010293]\n",
+            "O algoritmo de ordenação ordenou os dados corretamente\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def selection_sort(lista):\n",
+        "  N = len(lista)\n",
+        "\n",
+        "  for i in range(N - 1):\n",
+        "    menor = i\n",
+        "    for j in range(i + 1, N):\n",
+        "      if lista[j] < lista[menor]:\n",
+        "        menor = j\n",
+        "\n",
+        "    if i != menor:\n",
+        "      aux = lista[i]\n",
+        "      lista[i] = lista[menor]\n",
+        "      lista[menor] = aux\n",
+        "\n",
+        "# Teste com lista de 10 elementos\n",
+        "n = 10\n",
+        "np.random.seed(0)\n",
+        "dados = list(np.random.rand(n))\n",
+        "print('lista original =', dados)\n",
+        "selection_sort(dados)\n",
+        "print('lista ordenada =', dados)\n",
+        "if lista_ordenada(dados):\n",
+        "  print('O algoritmo de ordenação ordenou os dados corretamente')\n",
+        "else:\n",
+        "  print('O algoritmo de ordenação não ordenou os dados')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "dBemjuC4UTYS",
+        "outputId": "3e8b8c8b-1236-4419-cdc1-872f7cb6ce3b"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "lista original = [0.5488135039273248, 0.7151893663724195, 0.6027633760716439, 0.5448831829968969, 0.4236547993389047, 0.6458941130666561, 0.4375872112626925, 0.8917730007820798, 0.9636627605010293, 0.3834415188257777]\n",
+            "lista ordenada = [0.3834415188257777, 0.4236547993389047, 0.4375872112626925, 0.5448831829968969, 0.5488135039273248, 0.6027633760716439, 0.6458941130666561, 0.7151893663724195, 0.8917730007820798, 0.9636627605010293]\n",
+            "O algoritmo de ordenação ordenou os dados corretamente\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def bubble_sort(lista):\n",
+        "  N = len(lista)\n",
+        "  for i in range(N, 0, -1):\n",
+        "    for j in range(1, i):\n",
+        "      if lista[j - 1] > lista[j]:\n",
+        "        aux = lista[j]\n",
+        "        lista[j] = lista[j - 1]\n",
+        "        lista[j - 1] = aux\n",
+        "\n",
+        "# Teste com lista de 10 elementos\n",
+        "n = 10\n",
+        "np.random.seed(0)\n",
+        "dados = list(np.random.rand(n))\n",
+        "print('lista original =', dados)\n",
+        "bubble_sort(dados)\n",
+        "print('lista ordenada =', dados)\n",
+        "if lista_ordenada(dados):\n",
+        "  print('O algoritmo de ordenação ordenou os dados corretamente')\n",
+        "else:\n",
+        "  print('O algoritmo de ordenação não ordenou os dados')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "eUc7kuroXLmo",
+        "outputId": "a2ea276e-d46a-4d4b-cfb1-0e837d9c6c60"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "lista original = [0.5488135039273248, 0.7151893663724195, 0.6027633760716439, 0.5448831829968969, 0.4236547993389047, 0.6458941130666561, 0.4375872112626925, 0.8917730007820798, 0.9636627605010293, 0.3834415188257777]\n",
+            "lista ordenada = [0.3834415188257777, 0.4236547993389047, 0.4375872112626925, 0.5448831829968969, 0.5488135039273248, 0.6027633760716439, 0.6458941130666561, 0.7151893663724195, 0.8917730007820798, 0.9636627605010293]\n",
+            "O algoritmo de ordenação ordenou os dados corretamente\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def counting_sort(lista):\n",
+        "  N = len(lista)\n",
+        "  K = maior_elemento(lista)\n",
+        "  lista_c = []\n",
+        "  lista_ordenada = []\n",
+        "\n",
+        "  for i in range(K + 1):\n",
+        "    lista_c.append(0)\n",
+        "\n",
+        "  for i in range(N):\n",
+        "    lista_ordenada.append(lista[i])\n",
+        "\n",
+        "  for i in range(N):\n",
+        "    lista_c[lista[i]] += 1\n",
+        "\n",
+        "  for i in range(1, K + 1):\n",
+        "    lista_c[i] += lista_c[i - 1]\n",
+        "\n",
+        "  for i in range(N - 1, -1, -1):\n",
+        "    indice = lista_c[lista[i]] - 1\n",
+        "    lista_ordenada[indice] = lista[i]\n",
+        "    lista_c[lista[i]] -= 1\n",
+        "\n",
+        "  for i in range(N):\n",
+        "    lista[i] = lista_ordenada[i]\n",
+        "\n",
+        "# Teste com lista de 10 elementos\n",
+        "n = 30\n",
+        "np.random.seed(0)\n",
+        "dados = list((30 * np.random.rand(n)).astype(int))\n",
+        "print('lista original =', dados)\n",
+        "counting_sort(dados)\n",
+        "print('lista ordenada =', dados)\n",
+        "if lista_ordenada(dados):\n",
+        "  print('O algoritmo de ordenação ordenou os dados corretamente')\n",
+        "else:\n",
+        "  print('O algoritmo de ordenação não ordenou os dados')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "RuJkrAxPXcgQ",
+        "outputId": "43421af5-61cd-4751-f0db-0c48278be985"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "lista original = [16, 21, 18, 16, 12, 19, 13, 26, 28, 11, 23, 15, 17, 27, 2, 2, 0, 24, 23, 26, 29, 23, 13, 23, 3, 19, 4, 28, 15, 12]\n",
+            "lista ordenada = [0, 2, 2, 3, 4, 11, 12, 12, 13, 13, 15, 15, 16, 16, 17, 18, 19, 19, 21, 23, 23, 23, 23, 24, 26, 26, 27, 28, 28, 29]\n",
+            "O algoritmo de ordenação ordenou os dados corretamente\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def radix_sort(lista):\n",
+        "  N = len(lista)\n",
+        "  lista_aux = []\n",
+        "  n_digitos = []\n",
+        "  for elemento in lista:\n",
+        "    n_digitos.append(len(obter_digitos(elemento)))\n",
+        "    lista_aux.append(elemento)\n",
+        "\n",
+        "  M = maior_elemento(n_digitos)\n",
+        "\n",
+        "  for p in range(M - 1, -1, -1):\n",
+        "    digitos = []\n",
+        "    for _ in range(10):\n",
+        "      digitos.append([])\n",
+        "\n",
+        "    for i in range(N):\n",
+        "      digitos_i = obter_digitos(lista_aux[i], little_endian=False, n_digitos=M)\n",
+        "      if len(digitos_i) > p:\n",
+        "        d = digitos_i[p]\n",
+        "      else:\n",
+        "        d = 0\n",
+        "      digitos[d].append(lista_aux[i])\n",
+        "\n",
+        "    contador = 0\n",
+        "    for d in range(10):\n",
+        "      for elemento in digitos[d]:\n",
+        "        lista_aux[contador] = elemento\n",
+        "        contador += 1\n",
+        "\n",
+        "  for i in range(N):\n",
+        "    lista[i] = lista_aux[i]\n",
+        "\n",
+        "# Teste com lista de 10 elementos\n",
+        "n = 20\n",
+        "np.random.seed(0)\n",
+        "dados = list((18000 * np.random.rand(n)).astype(int))\n",
+        "print('lista original =', dados)\n",
+        "radix_sort(dados)\n",
+        "print('lista ordenada =', dados)\n",
+        "if lista_ordenada(dados):\n",
+        "  print('O algoritmo de ordenação ordenou os dados corretamente')\n",
+        "else:\n",
+        "  print('O algoritmo de ordenação não ordenou os dados')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "yPbGAtS5owKj",
+        "outputId": "a120551f-ca2d-41cc-86ca-5450659bb7b6"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "lista original = [9878, 12873, 10849, 9807, 7625, 11626, 7876, 16051, 17345, 6901, 14251, 9520, 10224, 16660, 1278, 1568, 363, 14987, 14006, 15660]\n",
+            "lista ordenada = [363, 1278, 1568, 6901, 7625, 7876, 9520, 9807, 9878, 10224, 10849, 11626, 12873, 14006, 14251, 14987, 15660, 16051, 16660, 17345]\n",
+            "O algoritmo de ordenação ordenou os dados corretamente\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Testes"
+      ],
+      "metadata": {
+        "id": "ZJf5wolJtkN8"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Teste 1\n",
+        "# - Ordene a lista 1 com cada um dos cinco algoritmos de ordenação\n",
+        "# - Verifique se os dados estão ordenados\n",
+        "# - Compare o tempo de processamento para cada algoritmo\n",
+        "# - Ordene os algoritmos pelos respectivos tempos de processamento\n",
+        "N = 1000\n",
+        "\n",
+        "np.random.seed(0)\n",
+        "lista1 = list(np.arange(N)**2 + np.arange(N) - 1)\n",
+        "np.random.shuffle(lista1)\n",
+        "\n",
+        "print(f'A lista para o primeiro teste tem {N} elementos')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "yEh7XVWVtR-u",
+        "outputId": "870061a8-1a3c-47d6-c7de-b3fa29187222"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "A lista para o primeiro teste tem 1000 elementos\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print('Começo do teste 1')\n",
+        "print()\n",
+        "\n",
+        "lista_insertion = copiar_lista(lista1)\n",
+        "lista_selection = copiar_lista(lista1)\n",
+        "lista_bubble = copiar_lista(lista1)\n",
+        "lista_counting = copiar_lista(lista1)\n",
+        "lista_radix = copiar_lista(lista1)\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "insertion_sort(lista_insertion)\n",
+        "tempo_insertion = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_insertion):\n",
+        "  print(f'O algoritmo insertion_sort ordenou os dados corretamente em {tempo_insertion:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo insertion_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "selection_sort(lista_selection)\n",
+        "tempo_selection = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_selection):\n",
+        "  print(f'O algoritmo selection_sort ordenou os dados corretamente em {tempo_selection:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo selection_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "bubble_sort(lista_bubble)\n",
+        "tempo_bubble = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_bubble):\n",
+        "  print(f'O algoritmo bubble_sort ordenou os dados corretamente em {tempo_bubble:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo bubble_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "menor = menor_elemento(lista_counting)\n",
+        "if menor < 0:\n",
+        "  for i in range(N):\n",
+        "    lista_counting[i] -= menor\n",
+        "counting_sort(lista_counting)\n",
+        "if menor < 0:\n",
+        "  for i in range(N):\n",
+        "    lista_counting[i] += menor\n",
+        "tempo_counting = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_counting):\n",
+        "  print(f'O algoritmo counting_sort ordenou os dados corretamente em {tempo_counting:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo counting_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "menor = menor_elemento(lista_radix)\n",
+        "if menor < 0:\n",
+        "  for i in range(N):\n",
+        "    lista_radix[i] -= menor\n",
+        "radix_sort(lista_radix)\n",
+        "if menor < 0:\n",
+        "  for i in range(N):\n",
+        "    lista_radix[i] += menor\n",
+        "tempo_radix = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_radix):\n",
+        "  print(f'O algoritmo radix_sort ordenou os dados corretamente em {tempo_radix:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo radix_sort não ordenou os dados')\n",
+        "\n",
+        "print()\n",
+        "print('Seguem os algoritmos segundo a ordem crescente do tempo de processamento:')\n",
+        "print(f'radix_sort com {tempo_radix:.3f} segundos')\n",
+        "print(f'insertion_sort com {tempo_insertion:.3f} segundos')\n",
+        "print(f'selection_sort com {tempo_selection:.3f} segundos')\n",
+        "print(f'bubble_sort com {tempo_bubble:.3f} segundos')\n",
+        "print(f'counting_sort com {tempo_counting:.3f} segundos')\n",
+        "\n",
+        "print()\n",
+        "print('Fim do teste 1')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "JNVoA4M9tnAb",
+        "outputId": "e3deaac2-9dc2-4fa7-e2e9-cee9d25899bd"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Começo do teste 1\n",
+            "\n",
+            "O algoritmo insertion_sort ordenou os dados corretamente em 0.110 segundos\n",
+            "O algoritmo selection_sort ordenou os dados corretamente em 0.091 segundos\n",
+            "O algoritmo bubble_sort ordenou os dados corretamente em 0.210 segundos\n",
+            "O algoritmo counting_sort ordenou os dados corretamente em 0.612 segundos\n",
+            "O algoritmo radix_sort ordenou os dados corretamente em 0.057 segundos\n",
+            "\n",
+            "Seguem os algoritmos segundo a ordem crescente do tempo de processamento:\n",
+            "radix_sort com 0.057 segundos\n",
+            "insertion_sort com 0.110 segundos\n",
+            "selection_sort com 0.091 segundos\n",
+            "bubble_sort com 0.210 segundos\n",
+            "counting_sort com 0.612 segundos\n",
+            "\n",
+            "Fim do teste 1\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Teste 2\n",
+        "# - Use o valor da variável N (teste N = 15, 100 e 2047)\n",
+        "# - Crie uma lista de N valores aleatórios com a função np.random.rand()\n",
+        "# - Verifique se todos os elementos são distintos\n",
+        "# - Prepare esses dados para que possam ser usados pelos algoritmos Counting-Sort e Radix-Sort\n",
+        "# - Ordene a lista obtida com cada um dos cinco algoritmos de ordenação\n",
+        "# - Ordene a lista e compare o tempo de processamento para cada algoritmo\n",
+        "\n",
+        "N = 15\n",
+        "\n",
+        "np.random.seed(0)\n",
+        "# Crie a lista aqui\n",
+        "lista2 = list(np.random.rand(N))\n",
+        "if elementos_distintos(lista2):\n",
+        "  print('Todos os elementos são distintos')\n",
+        "else:\n",
+        "  print('Há elementos repetidos')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "pL7FRcSyvdU4",
+        "outputId": "ce38807e-0084-47ea-8765-7a1db92a902b"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Todos os elementos são distintos\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(f'Começo do teste 2 para N = {N}')\n",
+        "print()\n",
+        "\n",
+        "lista_insertion = copiar_lista(lista2)\n",
+        "lista_selection = copiar_lista(lista2)\n",
+        "lista_bubble = copiar_lista(lista2)\n",
+        "lista_counting = copiar_lista(lista2)\n",
+        "lista_radix = copiar_lista(lista2)\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "insertion_sort(lista_insertion)\n",
+        "tempo_insertion = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_insertion):\n",
+        "  print(f'O algoritmo insertion_sort ordenou os dados corretamente em {tempo_insertion:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo insertion_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "selection_sort(lista_selection)\n",
+        "tempo_selection = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_selection):\n",
+        "  print(f'O algoritmo selection_sort ordenou os dados corretamente em {tempo_selection:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo selection_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "bubble_sort(lista_bubble)\n",
+        "tempo_bubble = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_bubble):\n",
+        "  print(f'O algoritmo bubble_sort ordenou os dados corretamente em {tempo_bubble:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo bubble_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "lista_inteiros = converter_para_inteiros(lista_counting)\n",
+        "mapa = {}\n",
+        "for i in range(N):\n",
+        "  mapa[lista_inteiros[i]] = lista_counting[i]\n",
+        "counting_sort(lista_inteiros)\n",
+        "for i in range(N):\n",
+        "  lista_counting[i] = mapa[lista_inteiros[i]]\n",
+        "tempo_counting = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_counting):\n",
+        "  print(f'O algoritmo counting_sort ordenou os dados corretamente em {tempo_counting:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo counting_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "menor = menor_elemento(lista_radix)\n",
+        "lista_inteiros = converter_para_inteiros(lista_radix)\n",
+        "mapa = {}\n",
+        "for i in range(N):\n",
+        "  mapa[lista_inteiros[i]] = lista_radix[i]\n",
+        "radix_sort(lista_inteiros)\n",
+        "for i in range(N):\n",
+        "  lista_radix[i] = mapa[lista_inteiros[i]]\n",
+        "tempo_radix = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_radix):\n",
+        "  print(f'O algoritmo radix_sort ordenou os dados corretamente em {tempo_radix:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo radix_sort não ordenou os dados')\n",
+        "\n",
+        "print()\n",
+        "print('Seguem os algoritmos segundo a ordem crescente do tempo de processamento:')\n",
+        "print(f'insertion_sort com {tempo_insertion:.3f} segundos')\n",
+        "print(f'selection_sort com {tempo_selection:.3f} segundos')\n",
+        "print(f'bubble_sort com {tempo_bubble:.3f} segundos')\n",
+        "print(f'radix_sort com {tempo_radix:.3f} segundos')\n",
+        "print(f'counting_sort com {tempo_counting:.3f} segundos')\n",
+        "\n",
+        "print()\n",
+        "print(f'Fim do teste 2 com N = {N}')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "vvS0a3v16FEu",
+        "outputId": "e812736b-b932-49f1-bc83-7e782cb00156"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Começo do teste 2 para N = 15\n",
+            "\n",
+            "O algoritmo insertion_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "O algoritmo selection_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "O algoritmo bubble_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "O algoritmo counting_sort ordenou os dados corretamente em 0.001 segundos\n",
+            "O algoritmo radix_sort ordenou os dados corretamente em 0.001 segundos\n",
+            "\n",
+            "Seguem os algoritmos segundo a ordem crescente do tempo de processamento:\n",
+            "insertion_sort com 0.000 segundos\n",
+            "selection_sort com 0.000 segundos\n",
+            "bubble_sort com 0.000 segundos\n",
+            "radix_sort com 0.001 segundos\n",
+            "counting_sort com 0.001 segundos\n",
+            "\n",
+            "Fim do teste 2 com N = 15\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print('Por curiosidade, seguem as listas originais e convertidas para inteiros')\n",
+        "print(lista2)\n",
+        "print(converter_para_inteiros(lista2))"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Hewab-6I9LaX",
+        "outputId": "484857d1-292c-4b82-9ec7-7c5c334bdf30"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Por curiosidade, seguem as listas originais e convertidas para inteiros\n",
+            "[0.5488135039273248, 0.7151893663724195, 0.6027633760716439, 0.5448831829968969, 0.4236547993389047, 0.6458941130666561, 0.4375872112626925, 0.8917730007820798, 0.9636627605010293, 0.3834415188257777, 0.7917250380826646, 0.5288949197529045, 0.5680445610939323, 0.925596638292661, 0.07103605819788694]\n",
+            "[548, 715, 602, 544, 423, 645, 437, 891, 963, 383, 791, 528, 568, 925, 71]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "N = 100\n",
+        "\n",
+        "np.random.seed(0)\n",
+        "# Crie a lista aqui\n",
+        "lista3 = list(np.random.rand(N))\n",
+        "if elementos_distintos(lista3):\n",
+        "  print('Todos os elementos são distintos')\n",
+        "else:\n",
+        "  print('Há elementos repetidos')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "_ZQGCvEV-xHS",
+        "outputId": "4e2b45e6-535f-4576-92b2-9694ecd5bb53"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Todos os elementos são distintos\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(f'Começo do teste 2 para N = {N}')\n",
+        "print()\n",
+        "\n",
+        "lista_insertion = copiar_lista(lista3)\n",
+        "lista_selection = copiar_lista(lista3)\n",
+        "lista_bubble = copiar_lista(lista3)\n",
+        "lista_counting = copiar_lista(lista3)\n",
+        "lista_radix = copiar_lista(lista3)\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "insertion_sort(lista_insertion)\n",
+        "tempo_insertion = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_insertion):\n",
+        "  print(f'O algoritmo insertion_sort ordenou os dados corretamente em {tempo_insertion:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo insertion_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "selection_sort(lista_selection)\n",
+        "tempo_selection = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_selection):\n",
+        "  print(f'O algoritmo selection_sort ordenou os dados corretamente em {tempo_selection:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo selection_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "bubble_sort(lista_bubble)\n",
+        "tempo_bubble = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_bubble):\n",
+        "  print(f'O algoritmo bubble_sort ordenou os dados corretamente em {tempo_bubble:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo bubble_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "lista_inteiros = converter_para_inteiros(lista_counting)\n",
+        "mapa = {}\n",
+        "for i in range(N):\n",
+        "  mapa[lista_inteiros[i]] = lista_counting[i]\n",
+        "counting_sort(lista_inteiros)\n",
+        "for i in range(N):\n",
+        "  lista_counting[i] = mapa[lista_inteiros[i]]\n",
+        "tempo_counting = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_counting):\n",
+        "  print(f'O algoritmo counting_sort ordenou os dados corretamente em {tempo_counting:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo counting_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "menor = menor_elemento(lista_radix)\n",
+        "lista_inteiros = converter_para_inteiros(lista_radix)\n",
+        "mapa = {}\n",
+        "for i in range(N):\n",
+        "  mapa[lista_inteiros[i]] = lista_radix[i]\n",
+        "radix_sort(lista_inteiros)\n",
+        "for i in range(N):\n",
+        "  lista_radix[i] = mapa[lista_inteiros[i]]\n",
+        "tempo_radix = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_radix):\n",
+        "  print(f'O algoritmo radix_sort ordenou os dados corretamente em {tempo_radix:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo radix_sort não ordenou os dados')\n",
+        "\n",
+        "print()\n",
+        "print('Seguem os algoritmos segundo a ordem crescente do tempo de processamento:')\n",
+        "print(f'insertion_sort com {tempo_insertion:.3f} segundos')\n",
+        "print(f'selection_sort com {tempo_selection:.3f} segundos')\n",
+        "print(f'bubble_sort com {tempo_bubble:.3f} segundos')\n",
+        "print(f'radix_sort com {tempo_radix:.3f} segundos')\n",
+        "print(f'counting_sort com {tempo_counting:.3f} segundos')\n",
+        "\n",
+        "print()\n",
+        "print(f'Fim do teste 2 com N = {N}')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ghdnEpuG_WDK",
+        "outputId": "f4a99c97-54b4-4c07-8cee-43142d905ec4"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Começo do teste 2 para N = 100\n",
+            "\n",
+            "O algoritmo insertion_sort ordenou os dados corretamente em 0.001 segundos\n",
+            "O algoritmo selection_sort ordenou os dados corretamente em 0.001 segundos\n",
+            "O algoritmo bubble_sort ordenou os dados corretamente em 0.002 segundos\n",
+            "O algoritmo counting_sort ordenou os dados corretamente em 0.012 segundos\n",
+            "O algoritmo radix_sort ordenou os dados corretamente em 0.004 segundos\n",
+            "\n",
+            "Seguem os algoritmos segundo a ordem crescente do tempo de processamento:\n",
+            "insertion_sort com 0.001 segundos\n",
+            "selection_sort com 0.001 segundos\n",
+            "bubble_sort com 0.002 segundos\n",
+            "radix_sort com 0.004 segundos\n",
+            "counting_sort com 0.012 segundos\n",
+            "\n",
+            "Fim do teste 2 com N = 100\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "N = 2047\n",
+        "\n",
+        "np.random.seed(0)\n",
+        "# Crie a lista aqui\n",
+        "lista4 = list(np.random.rand(N))\n",
+        "if elementos_distintos(lista4):\n",
+        "  print('Todos os elementos são distintos')\n",
+        "else:\n",
+        "  print('Há elementos repetidos')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "F1FIcAiS_lBP",
+        "outputId": "913791a8-1525-4456-ce1b-c5be472206b2"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Todos os elementos são distintos\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(f'Começo do teste 2 para N = {N}')\n",
+        "print()\n",
+        "\n",
+        "lista_insertion = copiar_lista(lista4)\n",
+        "lista_selection = copiar_lista(lista4)\n",
+        "lista_bubble = copiar_lista(lista4)\n",
+        "lista_counting = copiar_lista(lista4)\n",
+        "lista_radix = copiar_lista(lista4)\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "insertion_sort(lista_insertion)\n",
+        "tempo_insertion = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_insertion):\n",
+        "  print(f'O algoritmo insertion_sort ordenou os dados corretamente em {tempo_insertion:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo insertion_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "selection_sort(lista_selection)\n",
+        "tempo_selection = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_selection):\n",
+        "  print(f'O algoritmo selection_sort ordenou os dados corretamente em {tempo_selection:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo selection_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "bubble_sort(lista_bubble)\n",
+        "tempo_bubble = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_bubble):\n",
+        "  print(f'O algoritmo bubble_sort ordenou os dados corretamente em {tempo_bubble:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo bubble_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "lista_inteiros = converter_para_inteiros(lista_counting)\n",
+        "mapa = {}\n",
+        "for i in range(N):\n",
+        "  mapa[lista_inteiros[i]] = lista_counting[i]\n",
+        "counting_sort(lista_inteiros)\n",
+        "for i in range(N):\n",
+        "  lista_counting[i] = mapa[lista_inteiros[i]]\n",
+        "tempo_counting = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_counting):\n",
+        "  print(f'O algoritmo counting_sort ordenou os dados corretamente em {tempo_counting:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo counting_sort não ordenou os dados')\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "menor = menor_elemento(lista_radix)\n",
+        "lista_inteiros = converter_para_inteiros(lista_radix)\n",
+        "mapa = {}\n",
+        "for i in range(N):\n",
+        "  mapa[lista_inteiros[i]] = lista_radix[i]\n",
+        "radix_sort(lista_inteiros)\n",
+        "for i in range(N):\n",
+        "  lista_radix[i] = mapa[lista_inteiros[i]]\n",
+        "tempo_radix = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_radix):\n",
+        "  print(f'O algoritmo radix_sort ordenou os dados corretamente em {tempo_radix:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo radix_sort não ordenou os dados')\n",
+        "\n",
+        "print()\n",
+        "print('Seguem os algoritmos segundo a ordem crescente do tempo de processamento:')\n",
+        "print(f'selection_sort com {tempo_selection:.3f} segundos')\n",
+        "print(f'insertion_sort com {tempo_insertion:.3f} segundos')\n",
+        "print(f'bubble_sort com {tempo_bubble:.3f} segundos')\n",
+        "print(f'radix_sort com {tempo_radix:.3f} segundos')\n",
+        "print(f'counting_sort com {tempo_counting:.3f} segundos')\n",
+        "\n",
+        "print()\n",
+        "print(f'Fim do teste 2 com N = {N}')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "A9178nmqBP7C",
+        "outputId": "14b40462-e67f-4028-8a18-db15fc9d016c"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Começo do teste 2 para N = 2047\n",
+            "\n",
+            "O algoritmo insertion_sort ordenou os dados corretamente em 0.250 segundos\n",
+            "O algoritmo selection_sort ordenou os dados corretamente em 0.202 segundos\n",
+            "O algoritmo bubble_sort ordenou os dados corretamente em 0.438 segundos\n",
+            "O algoritmo counting_sort ordenou os dados corretamente em 3.711 segundos\n",
+            "O algoritmo radix_sort ordenou os dados corretamente em 1.024 segundos\n",
+            "\n",
+            "Seguem os algoritmos segundo a ordem crescente do tempo de processamento:\n",
+            "selection_sort com 0.202 segundos\n",
+            "insertion_sort com 0.250 segundos\n",
+            "bubble_sort com 0.438 segundos\n",
+            "radix_sort com 1.024 segundos\n",
+            "counting_sort com 3.711 segundos\n",
+            "\n",
+            "Fim do teste 2 com N = 2047\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Teste 3\n",
+        "# - Crie e apresente uma lista de N² valores aleatórios como feito no Teste 1\n",
+        "# - Ordene a lista com cada um dos cinco algoritmos de ordenação\n",
+        "# - Compare o tempo de processamento para cada algoritmo\n",
+        "# - Apresente a lista ordenada como uma matriz NxN onde os valores seguem um padrão espiral\n",
+        "\n",
+        "# Exemplo:\n",
+        "# >> Quantidade de elementos = 3\n",
+        "# >> lista = [5, 9, 1, 6, 4, 2, 7, 3, 8]\n",
+        "# >> A ordenação com o algoritmo ***-Sort demorou 10ms\n",
+        "# >> Resultado:\n",
+        "# >> [[1, 2, 3],\n",
+        "# >>  [8, 9, 4],\n",
+        "# >>  [7, 6, 5]]\n",
+        "\n",
+        "N = 3\n",
+        "\n",
+        "np.random.seed(0)\n",
+        "# Crie a lista aqui\n",
+        "lista5 = [(i + 1) for i in range(N*N)]\n",
+        "np.random.shuffle(lista5)\n",
+        "\n",
+        "print(f'A lista para o terceiro teste tem {len(lista5)} elementos')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Dif6FyPnBShO",
+        "outputId": "0b7bdc27-3681-4b92-99bf-6f9388d7b956"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "A lista para o terceiro teste tem 9 elementos\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(f'Começo do teste 3 com N = {N}')\n",
+        "print()\n",
+        "\n",
+        "lista_insertion = copiar_lista(lista5)\n",
+        "lista_selection = copiar_lista(lista5)\n",
+        "lista_bubble = copiar_lista(lista5)\n",
+        "lista_counting = copiar_lista(lista5)\n",
+        "lista_radix = copiar_lista(lista5)\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "insertion_sort(lista_insertion)\n",
+        "tempo_insertion = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_insertion):\n",
+        "  print(f'O algoritmo insertion_sort ordenou os dados corretamente em {tempo_insertion:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo insertion_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_insertion)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "selection_sort(lista_selection)\n",
+        "tempo_selection = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_selection):\n",
+        "  print(f'O algoritmo selection_sort ordenou os dados corretamente em {tempo_selection:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo selection_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_selection)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "bubble_sort(lista_bubble)\n",
+        "tempo_bubble = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_bubble):\n",
+        "  print(f'O algoritmo bubble_sort ordenou os dados corretamente em {tempo_bubble:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo bubble_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_bubble)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "counting_sort(lista_counting)\n",
+        "tempo_counting = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_counting):\n",
+        "  print(f'O algoritmo counting_sort ordenou os dados corretamente em {tempo_counting:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo counting_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_counting)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "radix_sort(lista_radix)\n",
+        "tempo_radix = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_radix):\n",
+        "  print(f'O algoritmo radix_sort ordenou os dados corretamente em {tempo_radix:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo radix_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_radix)\n",
+        "print()\n",
+        "\n",
+        "print()\n",
+        "print('Seguem os algoritmos segundo a ordem crescente do tempo de processamento:')\n",
+        "print(f'selection_sort com {tempo_selection:.3f} segundos')\n",
+        "print(f'insertion_sort com {tempo_insertion:.3f} segundos')\n",
+        "print(f'bubble_sort com {tempo_bubble:.3f} segundos')\n",
+        "print(f'radix_sort com {tempo_radix:.3f} segundos')\n",
+        "print(f'counting_sort com {tempo_counting:.3f} segundos')\n",
+        "\n",
+        "print()\n",
+        "print(f'Fim do teste 3 com N = {N}')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "6MNb0ZjWDEZV",
+        "outputId": "a159dff7-5ff7-4b07-b07b-e62de1f791c5"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Começo do teste 3 com N = 3\n",
+            "\n",
+            "O algoritmo insertion_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3]\n",
+            "[8, 9, 4]\n",
+            "[7, 6, 5]\n",
+            "\n",
+            "O algoritmo selection_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3]\n",
+            "[8, 9, 4]\n",
+            "[7, 6, 5]\n",
+            "\n",
+            "O algoritmo bubble_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3]\n",
+            "[8, 9, 4]\n",
+            "[7, 6, 5]\n",
+            "\n",
+            "O algoritmo counting_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3]\n",
+            "[8, 9, 4]\n",
+            "[7, 6, 5]\n",
+            "\n",
+            "O algoritmo radix_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3]\n",
+            "[8, 9, 4]\n",
+            "[7, 6, 5]\n",
+            "\n",
+            "\n",
+            "Seguem os algoritmos segundo a ordem crescente do tempo de processamento:\n",
+            "selection_sort com 0.000 segundos\n",
+            "insertion_sort com 0.000 segundos\n",
+            "bubble_sort com 0.000 segundos\n",
+            "radix_sort com 0.000 segundos\n",
+            "counting_sort com 0.000 segundos\n",
+            "\n",
+            "Fim do teste 3 com N = 3\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "N = 5\n",
+        "\n",
+        "np.random.seed(0)\n",
+        "# Crie a lista aqui\n",
+        "lista6 = [(i + 1) for i in range(N*N)]\n",
+        "np.random.shuffle(lista6)\n",
+        "\n",
+        "print(f'A lista para o terceiro teste tem {len(lista6)} elementos')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "qBx4uWRLIFP9",
+        "outputId": "2edf169a-c49a-4783-bbed-dadc11bf5336"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "A lista para o terceiro teste tem 25 elementos\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(f'Começo do teste 3 com N = {N}')\n",
+        "print()\n",
+        "\n",
+        "lista_insertion = copiar_lista(lista6)\n",
+        "lista_selection = copiar_lista(lista6)\n",
+        "lista_bubble = copiar_lista(lista6)\n",
+        "lista_counting = copiar_lista(lista6)\n",
+        "lista_radix = copiar_lista(lista6)\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "insertion_sort(lista_insertion)\n",
+        "tempo_insertion = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_insertion):\n",
+        "  print(f'O algoritmo insertion_sort ordenou os dados corretamente em {tempo_insertion:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo insertion_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_insertion)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "selection_sort(lista_selection)\n",
+        "tempo_selection = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_selection):\n",
+        "  print(f'O algoritmo selection_sort ordenou os dados corretamente em {tempo_selection:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo selection_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_selection)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "bubble_sort(lista_bubble)\n",
+        "tempo_bubble = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_bubble):\n",
+        "  print(f'O algoritmo bubble_sort ordenou os dados corretamente em {tempo_bubble:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo bubble_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_bubble)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "counting_sort(lista_counting)\n",
+        "tempo_counting = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_counting):\n",
+        "  print(f'O algoritmo counting_sort ordenou os dados corretamente em {tempo_counting:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo counting_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_counting)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "radix_sort(lista_radix)\n",
+        "tempo_radix = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_radix):\n",
+        "  print(f'O algoritmo radix_sort ordenou os dados corretamente em {tempo_radix:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo radix_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_radix)\n",
+        "print()\n",
+        "\n",
+        "print()\n",
+        "print('Seguem os algoritmos segundo a ordem crescente do tempo de processamento:')\n",
+        "print(f'selection_sort com {tempo_selection:.3f} segundos')\n",
+        "print(f'insertion_sort com {tempo_insertion:.3f} segundos')\n",
+        "print(f'bubble_sort com {tempo_bubble:.3f} segundos')\n",
+        "print(f'radix_sort com {tempo_radix:.3f} segundos')\n",
+        "print(f'counting_sort com {tempo_counting:.3f} segundos')\n",
+        "\n",
+        "print()\n",
+        "print(f'Fim do teste 3 com N = {N}')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "0hAgv5fOIR36",
+        "outputId": "664381a2-15d1-42c0-a17e-89da47aab1db"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Começo do teste 3 com N = 5\n",
+            "\n",
+            "O algoritmo insertion_sort ordenou os dados corretamente em 0.001 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5]\n",
+            "[16, 17, 18, 19, 6]\n",
+            "[15, 24, 25, 20, 7]\n",
+            "[14, 23, 22, 21, 8]\n",
+            "[13, 12, 11, 10, 9]\n",
+            "\n",
+            "O algoritmo selection_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5]\n",
+            "[16, 17, 18, 19, 6]\n",
+            "[15, 24, 25, 20, 7]\n",
+            "[14, 23, 22, 21, 8]\n",
+            "[13, 12, 11, 10, 9]\n",
+            "\n",
+            "O algoritmo bubble_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5]\n",
+            "[16, 17, 18, 19, 6]\n",
+            "[15, 24, 25, 20, 7]\n",
+            "[14, 23, 22, 21, 8]\n",
+            "[13, 12, 11, 10, 9]\n",
+            "\n",
+            "O algoritmo counting_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5]\n",
+            "[16, 17, 18, 19, 6]\n",
+            "[15, 24, 25, 20, 7]\n",
+            "[14, 23, 22, 21, 8]\n",
+            "[13, 12, 11, 10, 9]\n",
+            "\n",
+            "O algoritmo radix_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5]\n",
+            "[16, 17, 18, 19, 6]\n",
+            "[15, 24, 25, 20, 7]\n",
+            "[14, 23, 22, 21, 8]\n",
+            "[13, 12, 11, 10, 9]\n",
+            "\n",
+            "\n",
+            "Seguem os algoritmos segundo a ordem crescente do tempo de processamento:\n",
+            "selection_sort com 0.000 segundos\n",
+            "insertion_sort com 0.001 segundos\n",
+            "bubble_sort com 0.000 segundos\n",
+            "radix_sort com 0.000 segundos\n",
+            "counting_sort com 0.000 segundos\n",
+            "\n",
+            "Fim do teste 3 com N = 5\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "N = 10\n",
+        "\n",
+        "np.random.seed(0)\n",
+        "# Crie a lista aqui\n",
+        "lista7 = [(i + 1) for i in range(N*N)]\n",
+        "np.random.shuffle(lista7)\n",
+        "\n",
+        "print(f'A lista para o terceiro teste tem {len(lista7)} elementos')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "TP7TPZBtIXKf",
+        "outputId": "dc8f170d-5019-4549-ee1b-39d49423a962"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "A lista para o terceiro teste tem 100 elementos\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(f'Começo do teste 3 com N = {N}')\n",
+        "print()\n",
+        "\n",
+        "lista_insertion = copiar_lista(lista7)\n",
+        "lista_selection = copiar_lista(lista7)\n",
+        "lista_bubble = copiar_lista(lista7)\n",
+        "lista_counting = copiar_lista(lista7)\n",
+        "lista_radix = copiar_lista(lista7)\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "insertion_sort(lista_insertion)\n",
+        "tempo_insertion = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_insertion):\n",
+        "  print(f'O algoritmo insertion_sort ordenou os dados corretamente em {tempo_insertion:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo insertion_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_insertion)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "selection_sort(lista_selection)\n",
+        "tempo_selection = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_selection):\n",
+        "  print(f'O algoritmo selection_sort ordenou os dados corretamente em {tempo_selection:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo selection_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_selection)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "bubble_sort(lista_bubble)\n",
+        "tempo_bubble = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_bubble):\n",
+        "  print(f'O algoritmo bubble_sort ordenou os dados corretamente em {tempo_bubble:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo bubble_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_bubble)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "counting_sort(lista_counting)\n",
+        "tempo_counting = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_counting):\n",
+        "  print(f'O algoritmo counting_sort ordenou os dados corretamente em {tempo_counting:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo counting_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_counting)\n",
+        "print()\n",
+        "\n",
+        "inicio = datetime.now()\n",
+        "radix_sort(lista_radix)\n",
+        "tempo_radix = (datetime.now() - inicio).total_seconds()\n",
+        "if lista_ordenada(lista_radix):\n",
+        "  print(f'O algoritmo radix_sort ordenou os dados corretamente em {tempo_radix:.3f} segundos')\n",
+        "else:\n",
+        "  print('O algoritmo radix_sort não ordenou os dados')\n",
+        "print('Segue o padrão espiral')\n",
+        "exibir_espiral(lista_radix)\n",
+        "print()\n",
+        "\n",
+        "print()\n",
+        "print('Seguem os algoritmos segundo a ordem crescente do tempo de processamento:')\n",
+        "print(f'counting_sort com {tempo_counting:.3f} segundos')\n",
+        "print(f'radix_sort com {tempo_radix:.3f} segundos')\n",
+        "print(f'selection_sort com {tempo_selection:.3f} segundos')\n",
+        "print(f'insertion_sort com {tempo_insertion:.3f} segundos')\n",
+        "print(f'bubble_sort com {tempo_bubble:.3f} segundos')\n",
+        "\n",
+        "print()\n",
+        "print(f'Fim do teste 3 com N = {N}')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Jpgi7OutIjm6",
+        "outputId": "ecb946aa-07fe-40db-ac17-51712728cd96"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Começo do teste 3 com N = 10\n",
+            "\n",
+            "O algoritmo insertion_sort ordenou os dados corretamente em 0.001 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n",
+            "[36, 37, 38, 39, 40, 41, 42, 43, 44, 11]\n",
+            "[35, 64, 65, 66, 67, 68, 69, 70, 45, 12]\n",
+            "[34, 63, 84, 85, 86, 87, 88, 71, 46, 13]\n",
+            "[33, 62, 83, 96, 97, 98, 89, 72, 47, 14]\n",
+            "[32, 61, 82, 95, 100, 99, 90, 73, 48, 15]\n",
+            "[31, 60, 81, 94, 93, 92, 91, 74, 49, 16]\n",
+            "[30, 59, 80, 79, 78, 77, 76, 75, 50, 17]\n",
+            "[29, 58, 57, 56, 55, 54, 53, 52, 51, 18]\n",
+            "[28, 27, 26, 25, 24, 23, 22, 21, 20, 19]\n",
+            "\n",
+            "O algoritmo selection_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n",
+            "[36, 37, 38, 39, 40, 41, 42, 43, 44, 11]\n",
+            "[35, 64, 65, 66, 67, 68, 69, 70, 45, 12]\n",
+            "[34, 63, 84, 85, 86, 87, 88, 71, 46, 13]\n",
+            "[33, 62, 83, 96, 97, 98, 89, 72, 47, 14]\n",
+            "[32, 61, 82, 95, 100, 99, 90, 73, 48, 15]\n",
+            "[31, 60, 81, 94, 93, 92, 91, 74, 49, 16]\n",
+            "[30, 59, 80, 79, 78, 77, 76, 75, 50, 17]\n",
+            "[29, 58, 57, 56, 55, 54, 53, 52, 51, 18]\n",
+            "[28, 27, 26, 25, 24, 23, 22, 21, 20, 19]\n",
+            "\n",
+            "O algoritmo bubble_sort ordenou os dados corretamente em 0.001 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n",
+            "[36, 37, 38, 39, 40, 41, 42, 43, 44, 11]\n",
+            "[35, 64, 65, 66, 67, 68, 69, 70, 45, 12]\n",
+            "[34, 63, 84, 85, 86, 87, 88, 71, 46, 13]\n",
+            "[33, 62, 83, 96, 97, 98, 89, 72, 47, 14]\n",
+            "[32, 61, 82, 95, 100, 99, 90, 73, 48, 15]\n",
+            "[31, 60, 81, 94, 93, 92, 91, 74, 49, 16]\n",
+            "[30, 59, 80, 79, 78, 77, 76, 75, 50, 17]\n",
+            "[29, 58, 57, 56, 55, 54, 53, 52, 51, 18]\n",
+            "[28, 27, 26, 25, 24, 23, 22, 21, 20, 19]\n",
+            "\n",
+            "O algoritmo counting_sort ordenou os dados corretamente em 0.000 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n",
+            "[36, 37, 38, 39, 40, 41, 42, 43, 44, 11]\n",
+            "[35, 64, 65, 66, 67, 68, 69, 70, 45, 12]\n",
+            "[34, 63, 84, 85, 86, 87, 88, 71, 46, 13]\n",
+            "[33, 62, 83, 96, 97, 98, 89, 72, 47, 14]\n",
+            "[32, 61, 82, 95, 100, 99, 90, 73, 48, 15]\n",
+            "[31, 60, 81, 94, 93, 92, 91, 74, 49, 16]\n",
+            "[30, 59, 80, 79, 78, 77, 76, 75, 50, 17]\n",
+            "[29, 58, 57, 56, 55, 54, 53, 52, 51, 18]\n",
+            "[28, 27, 26, 25, 24, 23, 22, 21, 20, 19]\n",
+            "\n",
+            "O algoritmo radix_sort ordenou os dados corretamente em 0.001 segundos\n",
+            "Segue o padrão espiral\n",
+            "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n",
+            "[36, 37, 38, 39, 40, 41, 42, 43, 44, 11]\n",
+            "[35, 64, 65, 66, 67, 68, 69, 70, 45, 12]\n",
+            "[34, 63, 84, 85, 86, 87, 88, 71, 46, 13]\n",
+            "[33, 62, 83, 96, 97, 98, 89, 72, 47, 14]\n",
+            "[32, 61, 82, 95, 100, 99, 90, 73, 48, 15]\n",
+            "[31, 60, 81, 94, 93, 92, 91, 74, 49, 16]\n",
+            "[30, 59, 80, 79, 78, 77, 76, 75, 50, 17]\n",
+            "[29, 58, 57, 56, 55, 54, 53, 52, 51, 18]\n",
+            "[28, 27, 26, 25, 24, 23, 22, 21, 20, 19]\n",
+            "\n",
+            "\n",
+            "Seguem os algoritmos segundo a ordem crescente do tempo de processamento:\n",
+            "counting_sort com 0.000 segundos\n",
+            "radix_sort com 0.001 segundos\n",
+            "selection_sort com 0.000 segundos\n",
+            "insertion_sort com 0.001 segundos\n",
+            "bubble_sort com 0.001 segundos\n",
+            "\n",
+            "Fim do teste 3 com N = 10\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "aZRNkPa5Im5z"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
